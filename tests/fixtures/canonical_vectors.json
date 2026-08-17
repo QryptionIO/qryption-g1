@@ -1,0 +1,65 @@
+[
+  {
+    "case_id": "01_minimum_values",
+    "authorizations": [{"operation":"","amount":"","currency":"","destination":"","nonce":0,"expires_at":0,"context":""}],
+    "canonical_bytes": ["7b226f7065726174696f6e223a22222c22616d6f756e74223a22222c2263757272656e6379223a22222c2264657374696e6174696f6e223a22222c226e6f6e6365223a302c22657870697265735f6174223a302c22636f6e74657874223a22227d"],
+    "canonical_bytes_length": [97],
+    "notes": "All String fields are empty; nonce and expires_at are zero."
+  },
+  {
+    "case_id": "02_literal_quote",
+    "authorizations": [{"operation":"\"","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":1,"expires_at":1234567890,"context":"qryption-poc"}],
+    "canonical_bytes": ["7b226f7065726174696f6e223a225c22222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a312c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a227172797074696f6e2d706f63227d"],
+    "canonical_bytes_length": [138],
+    "notes": "The literal quote in operation is escaped by serde_json."
+  },
+  {
+    "case_id": "03_json_like_substring",
+    "authorizations": [{"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":1,"expires_at":1234567890,"context":"\",\"currency\":\"XXX"}],
+    "canonical_bytes": ["7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a312c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a225c222c5c2263757272656e63795c223a5c22585858227d"],
+    "canonical_bytes_length": [153],
+    "notes": "The JSON-like substring remains escaped inside context and does not introduce a field."
+  },
+  {
+    "case_id": "04_same_value_in_different_fields",
+    "authorizations": [
+      {"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":7,"expires_at":1234567890,"context":"SHARED"},
+      {"operation":"SHARED","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":7,"expires_at":1234567890,"context":"TRANSFER"}
+    ],
+    "canonical_bytes": [
+      "7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a372c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a22534841524544227d",
+      "7b226f7065726174696f6e223a22534841524544222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a372c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a225452414e53464552227d"
+    ],
+    "canonical_bytes_length": [138,138],
+    "bytes_equal": false,
+    "notes": "TRANSFER and SHARED are swapped between operation and context; the encoded bytes differ."
+  },
+  {
+    "case_id": "05_max_u64_nonce",
+    "authorizations": [{"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":18446744073709551615,"expires_at":1234567890,"context":"qryption-poc"}],
+    "canonical_bytes": ["7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a31383434363734343037333730393535313631352c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a227172797074696f6e2d706f63227d"],
+    "canonical_bytes_length": [163],
+    "notes": "nonce is u64::MAX and is encoded as an unquoted decimal JSON number."
+  },
+  {
+    "case_id": "06_two_equal_constructions",
+    "authorizations": [
+      {"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":42,"expires_at":1234567890,"context":"qryption-poc"},
+      {"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"ACCOUNT_123","nonce":42,"expires_at":1234567890,"context":"qryption-poc"}
+    ],
+    "canonical_bytes": [
+      "7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a34322c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a227172797074696f6e2d706f63227d",
+      "7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a224143434f554e545f313233222c226e6f6e6365223a34322c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a227172797074696f6e2d706f63227d"
+    ],
+    "canonical_bytes_length": [145,145],
+    "bytes_equal": true,
+    "notes": "Two independently constructed Authorization values with identical fields encode identically."
+  },
+  {
+    "case_id": "07_non_ascii_unicode",
+    "authorizations": [{"operation":"TRANSFER","amount":"1000","currency":"EUR","destination":"café","nonce":9,"expires_at":1234567890,"context":"qryption-poc"}],
+    "canonical_bytes": ["7b226f7065726174696f6e223a225452414e53464552222c22616d6f756e74223a2231303030222c2263757272656e6379223a22455552222c2264657374696e6174696f6e223a22636166c3a9222c226e6f6e6365223a392c22657870697265735f6174223a313233343536373839302c22636f6e74657874223a227172797074696f6e2d706f63227d"],
+    "canonical_bytes_length": [138],
+    "notes": "U+00E9 is emitted directly as UTF-8 c3 a9 rather than as a JSON Unicode escape."
+  }
+]
